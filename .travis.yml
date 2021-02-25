@@ -1,0 +1,19 @@
+# see https://docs.travis-ci.com/user/languages/php for more hints
+language: php
+
+php:
+    - 7.3
+    - 7.4
+
+branches:
+    only:
+        - master
+        - develop
+
+env:
+    global:
+        - COMPOSER_CACHE_DIR=.composer-cache/
+
+install: composer install
+
+script: ./bin/phpunit -c tests/
