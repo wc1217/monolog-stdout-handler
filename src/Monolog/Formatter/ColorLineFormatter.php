@@ -26,7 +26,7 @@ class ColorLineFormatter extends LineFormatter {
      */
     public function format(array $record): string {
         $output = parent::format($record);
-        if (empty(getenv('LS_COLORS', true))) {
+        if (!$this->detectColors()) {
             return $output;
         }
         $level = $record['level'] ?? 'debug';
@@ -70,5 +70,21 @@ class ColorLineFormatter extends LineFormatter {
             chr(27) . '[%dm',
             $id
         );
+    }
+
+    /**
+     * @return bool
+     */
+    public function detectColors(): bool {
+        return (PHP_SAPI === 'cli' || PHP_SAPI === 'phpdbg')
+            && stream_isatty(STDOUT)
+            && getenv('NO_COLOR') === false // https://no-color.org
+            && (defined('PHP_WINDOWS_VERSION_BUILD')
+                ? (function_exists('sapi_windows_vt100_support') && sapi_windows_vt100_support(STDOUT))
+                || getenv('ConEmuANSI') === 'ON' // ConEmu
+                || getenv('ANSICON') !== false // ANSICON
+                || getenv('term') === 'xterm' // MSYS
+                || getenv('term') === 'xterm-256color' // MSYS
+                : true);
     }
 }
